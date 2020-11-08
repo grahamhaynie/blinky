@@ -18,7 +18,7 @@ export default class BoxForm extends React.Component {
 
     render(){
         return(
-            <div>
+            <div class="box">
                 <textarea value={this.state.text} onChange={this.handleTextChange} />
             </div>
         );

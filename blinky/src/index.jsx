@@ -4,6 +4,8 @@ import './index.css';
 
 import BoxForm from './components/blinkyBox.jsx'
 
+
+
 class BlinkApp extends React.Component {
     constructor(props) {
         super(props);
@@ -11,7 +13,7 @@ class BlinkApp extends React.Component {
 
     render(){
         return(        
-            <div>
+            <div class="main">
                 <BoxForm />
             </div>
         );
