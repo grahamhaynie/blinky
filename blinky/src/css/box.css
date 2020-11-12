@@ -4,7 +4,13 @@ textarea {
     color: #37ba16;
     width: 80%;
     height: 80%; 
+    cursor: default;
+    user-select:none;    
 }
+
+.noselect:focus {
+    outline: none;
+ }
 
 .box{
     height: 100%;
