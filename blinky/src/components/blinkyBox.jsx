@@ -2,13 +2,13 @@ import React from 'react';
 import '../css/box.css'
 
 
-function getDate(){
+function getPrompt(){
     let newDate = new Date()
     let hours = newDate.getHours();
     let mins = newDate.getMinutes();
     let secs = newDate.getSeconds();
 
-    return `${hours<10?`0${hours}`:`${hours}`}:${mins<10?`0${mins}`:`${mins}`}:${secs<10?`0${secs}`:`${secs}`}`
+    return `${hours<10?`0${hours}`:`${hours}`}:${mins<10?`0${mins}`:`${mins}`}:${secs<10?`0${secs}`:`${secs}`} > `
 }
 
 export default class BoxForm extends React.Component {
@@ -19,42 +19,50 @@ export default class BoxForm extends React.Component {
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
+        this.handleClick = this.handleClick.bind(this);
 
+        this.boxRef = React.createRef();
+
+        let prompt = getPrompt();
         this.state = {
-            text: getDate() + ' > ',
+            text: prompt,
             keyArray: [],
             selectTrigger: false,
             selected: "",
-            index: 0,
+            lineIndex: 0,
+            index: prompt.length,
         };
     }
 
     handleTextChange(e) {
-        if(this.state.keyArray['Enter'] === 1){
+        if(this.state.keyArray['Enter'] === 1){ 
             var command = this.state.text.slice(this.state.text.lastIndexOf('>') + 1);
             console.log('command: ' + command);
 
-            var newText = e.target.value + getDate() + ' > ';
+            var prompt = getPrompt();
+            var newText = e.target.value + prompt;
             this.setState({
                 text: newText,
-                index: 0,
+                lineIndex: 0,
+                index: this.state.index + prompt.length + 1,
             });
-        }else if(this.state.keyArray['Backspace'] === 1){
+        }else if(this.state.keyArray['Backspace'] === 1){ 
             // disable highlight select and delete, and deletion of anything before prompt
-            if(this.state.selected === "" && this.state.index - 1 >= 0){
+            if(this.state.selected === "" && this.state.lineIndex - 1 >= 0){
                 this.setState({
                     text: e.target.value,
+                    lineIndex: this.state.lineIndex - 1,
                     index: this.state.index - 1,
                 });
             }
-        }else {
+        }
+        else {
             this.setState({
                 text: e.target.value,
+                lineIndex: this.state.lineIndex + 1,
                 index: this.state.index + 1,
             });
         }
-
-        // TODO - make so user click goes to end, don't allow to click anywhere and enter text
 
     }
 
@@ -62,8 +70,21 @@ export default class BoxForm extends React.Component {
         this.setState({selected: e.target.value.substring(e.target.selectionStart, e.target.selectionEnd)});
     }
 
-    // TODO - make one liner
     handleKeyDown(e){
+
+        // disable up and down keys for now
+        if(e.key === 'ArrowUp' || e.key == 'ArrowDown'){
+            e.preventDefault();
+            // TODO - add scroll through commands
+        }else if(e.key === 'ArrowLeft'){
+
+            // TODO make so can't scroll left past prompt
+            
+            console.error("TODO");
+
+        }
+
+        // TODO - make one liner
         var keys = this.state.keyArray;
         keys[e.key] = 1;
         this.setState({keyArray: keys});
@@ -75,21 +96,30 @@ export default class BoxForm extends React.Component {
         this.setState({keyArray: keys});
     }
 
+    handleClick(e){
+        this.boxRef.current.selectionStart = this.boxRef.current.selectionEnd = this.state.index;
+
+        // TODO - make less janky
+
+    }
+
+
+    // TODO - var vs let
+    // TODO  - make so user can't highlight ?
+
     render(){
         return(
             <div className="box">
                 <textarea 
-
-                    // TODO disable highlight 
-
-
                     autoFocus={true}
+                    ref={this.boxRef}
                     unselectable="on"
                     value={this.state.text} 
                     onChange={this.handleTextChange}
                     onKeyDown={this.handleKeyDown} 
                     onKeyUp={this.handleKeyUp}
                     onSelect={this.handleSelect}
+                    onClick={this.handleClick}
                 />
             </div>
         );
