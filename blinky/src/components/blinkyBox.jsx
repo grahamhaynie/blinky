@@ -19,8 +19,7 @@ export default class BoxForm extends React.Component {
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
-        this.handleClick = this.handleClick.bind(this);
-
+        this.onMouseDown = this.onMouseDown.bind(this);
         this.boxRef = React.createRef();
 
         let prompt = getPrompt();
@@ -59,13 +58,16 @@ export default class BoxForm extends React.Component {
         }
 
         else if(this.state.changeTrigger){
-
             this.setState({
                 text: e.target.value,
                 lineIndex: this.state.lineIndex + 1,
                 changeTrigger: false,
             });
         }
+
+        var keys = this.state.keyArray;
+        Object.keys(keys).map((key) => {keys[key] = 0;});
+        this.setState({keyArray: keys});
 
     }
 
@@ -85,6 +87,7 @@ export default class BoxForm extends React.Component {
         if(e.key === 'ArrowUp' || e.key == 'ArrowDown'){
             e.preventDefault();
             // TODO - add scroll through commands
+            
         }else if(e.key === 'ArrowLeft'){
 
             if (this.state.lineIndex - 1 > 0){
@@ -107,16 +110,16 @@ export default class BoxForm extends React.Component {
     }
 
     handleKeyUp(e){
-
         var keys = this.state.keyArray;
         keys[e.key] = 0;
         this.setState({keyArray: keys});
     }
 
-    handleClick(e){
+    onMouseDown(e){
+        //e.preventDefault();
         this.boxRef.current.selectionStart = this.boxRef.current.selectionEnd = this.boxRef.current.textLength;
 
-        // TODO - make less janky
+        // TODO - make less janky - update cursor position
 
     }
 
@@ -125,15 +128,15 @@ export default class BoxForm extends React.Component {
     }
 
 
+    // TODO - left vs right arrow keys - if go all the way to right, can keep "going" 
+    // TODO - make so user can't highlight anything at all - bug: highlight text, pressing key deletes text
+    // TODO - disable user clicking anywhere in text box
     // TODO - var vs let
-    // TODO - fix kso not janky if spam keys
-    // TODO  - make so user can't highlight anything at all - bug: highlight text, pressing key deletes text
 
     render(){
         return(
             <div className="box">
                 <textarea 
-                    autoFocus={true}
                     ref={this.boxRef}
                     unselectable="on"
                     value={this.state.text} 
@@ -141,7 +144,7 @@ export default class BoxForm extends React.Component {
                     onKeyDown={this.handleKeyDown} 
                     onKeyUp={this.handleKeyUp}
                     onSelect={this.handleSelect}
-                    onClick={this.handleClick}
+                    onMouseDown={this.onMouseDown}
                 />
             </div>
         );

@@ -1,3 +1,11 @@
+* {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 textarea {
     resize: none;
     background-color: black;
@@ -5,7 +13,6 @@ textarea {
     width: 80%;
     height: 80%; 
     cursor: default;
-    user-select:none;    
     font-size: 15px;
 }
 
