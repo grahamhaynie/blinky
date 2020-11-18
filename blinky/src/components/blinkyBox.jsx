@@ -18,7 +18,6 @@ export default class BoxForm extends React.Component {
         this.handleTextChange = this.handleTextChange.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
-        this.handleSelect = this.handleSelect.bind(this);
         this.onMouseDown = this.onMouseDown.bind(this);
         this.boxRef = React.createRef();
 
@@ -29,6 +28,7 @@ export default class BoxForm extends React.Component {
             changeTrigger: false,
             selected: "",
             lineIndex: 0,
+            index: prompt.length,
         };
     }
 
@@ -44,15 +44,17 @@ export default class BoxForm extends React.Component {
                 text: newText,
                 lineIndex: 0,
                 changeTrigger: false,
+                index: newText.length,
             });
         }else if(this.state.keyArray['Backspace'] === 1){ 
             
             // disable highlight select and delete, and deletion of anything before prompt
-            if(this.state.selected === "" && this.state.lineIndex - 1 >= 0){
+            if(this.state.lineIndex - 1 >= 0){
                 this.setState({
                     text: e.target.value,
                     lineIndex: this.state.lineIndex - 1,
                     changeTrigger: false,
+                    index: this.state.index - 1,
                 });
             }
         }
@@ -62,6 +64,7 @@ export default class BoxForm extends React.Component {
                 text: e.target.value,
                 lineIndex: this.state.lineIndex + 1,
                 changeTrigger: false,
+                index: this.state.index + 1,
             });
         }
 
@@ -69,10 +72,6 @@ export default class BoxForm extends React.Component {
         Object.keys(keys).map((key) => {keys[key] = 0;});
         this.setState({keyArray: keys});
 
-    }
-
-    handleSelect(e){
-        this.setState({selected: e.target.value.substring(e.target.selectionStart, e.target.selectionEnd)});
     }
 
     handleKeyDown(e){
@@ -93,18 +92,25 @@ export default class BoxForm extends React.Component {
             if (this.state.lineIndex - 1 > 0){
                 this.setState({
                     lineIndex: this.state.lineIndex - 1,
+                    index: this.state.index - 1,
                 });
             }else{
                 this.boxRef.current.selectionStart = e.target.selectionStart + 1;
             }
             //console.log(this.boxRef.current.textLength); 
         }else if(e.key === 'ArrowRight'){
-           this.setState({
-                lineIndex: this.state.lineIndex + 1,
-            });
+            if(this.state.index + 1< this.boxRef.current.textLength){
+                this.setState({
+                    lineIndex: this.state.lineIndex + 1,
+                    index: this.state.index + 1,
+                });
+            }
             
         }else{
-            this.setState({changeTrigger: true});
+            this.setState({
+                changeTrigger: true,
+                index: this.state.index + 1,
+            });
         }
 
     }
@@ -115,12 +121,11 @@ export default class BoxForm extends React.Component {
         this.setState({keyArray: keys});
     }
 
+    // disable user clicking anywhere or drag selecting
     onMouseDown(e){
-        //e.preventDefault();
+        e.preventDefault();
         this.boxRef.current.selectionStart = this.boxRef.current.selectionEnd = this.boxRef.current.textLength;
-
-        // TODO - make less janky - update cursor position
-
+        this.boxRef.current.focus();
     }
 
     componentDidMount(){
@@ -128,9 +133,8 @@ export default class BoxForm extends React.Component {
     }
 
 
-    // TODO - left vs right arrow keys - if go all the way to right, can keep "going" 
-    // TODO - make so user can't highlight anything at all - bug: highlight text, pressing key deletes text
-    // TODO - disable user clicking anywhere in text box
+    // TODO - left vs right arrow keys - make so not all fucky k
+    // bug: type char, backspace, then can move left 
     // TODO - var vs let
 
     render(){
@@ -143,7 +147,6 @@ export default class BoxForm extends React.Component {
                     onChange={this.handleTextChange}
                     onKeyDown={this.handleKeyDown} 
                     onKeyUp={this.handleKeyUp}
-                    onSelect={this.handleSelect}
                     onMouseDown={this.onMouseDown}
                 />
             </div>
