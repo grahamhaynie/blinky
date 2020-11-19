@@ -27,32 +27,19 @@ export default class BoxForm extends React.Component {
             keyArray: [],
             changeTrigger: false,
             selected: "",
-            lineIndex: 0,
             index: prompt.length,
         };
     }
 
     handleTextChange(e) {
-
-        if(this.state.keyArray['Enter'] === 1){ 
-            var command = this.state.text.slice(this.state.text.lastIndexOf('>') + 1);
-            console.log('command: ' + command);
-
-            var prompt = getPrompt();
-            var newText = e.target.value + prompt;
-            this.setState({
-                text: newText,
-                lineIndex: 0,
-                changeTrigger: false,
-                index: newText.length,
-            });
-        }else if(this.state.keyArray['Backspace'] === 1){ 
+        if(this.state.keyArray['Backspace'] === 1){ 
             
             // disable highlight select and delete, and deletion of anything before prompt
-            if(this.state.lineIndex - 1 >= 0){
+
+            // TODO - fix this
+            if(this.state[this.boxRef.current.selectionStart - 1] === '>'){
                 this.setState({
                     text: e.target.value,
-                    lineIndex: this.state.lineIndex - 1,
                     changeTrigger: false,
                     index: this.state.index - 1,
                 });
@@ -62,7 +49,6 @@ export default class BoxForm extends React.Component {
         else if(this.state.changeTrigger){
             this.setState({
                 text: e.target.value,
-                lineIndex: this.state.lineIndex + 1,
                 changeTrigger: false,
                 index: this.state.index + 1,
             });
@@ -81,27 +67,40 @@ export default class BoxForm extends React.Component {
         keys[e.key] = 1;
         this.setState({keyArray: keys});
 
-
-        // disable up and down keys for now
-        if(e.key === 'ArrowUp' || e.key == 'ArrowDown'){
+        if(e.key === 'Enter'){
             e.preventDefault();
+            var command = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
+            
+            // TODO parse whitespace
+            
+            console.log('command: ' + command);
+
+            var prompt = getPrompt();
+            var newText = this.state.text + '\n' + prompt;
+            this.setState({
+                text: newText,
+                changeTrigger: false,
+                index: newText.length,
+            });
+        }
+        // for now disable ctrl + keys
+        // also disable up and down keys for now
+        else if(e.ctrlKey === true || e.key === 'ArrowUp' || e.key == 'ArrowDown'){
+            e.preventDefault();
+
             // TODO - add scroll through commands
             
         }else if(e.key === 'ArrowLeft'){
-
-            if (this.state.lineIndex - 1 > 0){
+            if (this.boxRef.current.value[this.boxRef.current.selectionStart - 1] === '>'){
+                this.boxRef.current.selectionStart = this.boxRef.current.selectionEnd = e.target.selectionStart + 1;
+            }else{
                 this.setState({
-                    lineIndex: this.state.lineIndex - 1,
                     index: this.state.index - 1,
                 });
-            }else{
-                this.boxRef.current.selectionStart = e.target.selectionStart + 1;
             }
-            //console.log(this.boxRef.current.textLength); 
         }else if(e.key === 'ArrowRight'){
-            if(this.state.index + 1< this.boxRef.current.textLength){
+            if(this.state.index + 1 < this.boxRef.current.textLength){
                 this.setState({
-                    lineIndex: this.state.lineIndex + 1,
                     index: this.state.index + 1,
                 });
             }
@@ -109,16 +108,14 @@ export default class BoxForm extends React.Component {
         }else{
             this.setState({
                 changeTrigger: true,
-                index: this.state.index + 1,
             });
         }
 
     }
 
     handleKeyUp(e){
-        var keys = this.state.keyArray;
-        keys[e.key] = 0;
-        this.setState({keyArray: keys});
+        const newKyes = {...this.state.keys, key: 0}
+        this.setState({keyArray: newKyes});
     }
 
     // disable user clicking anywhere or drag selecting
@@ -132,9 +129,7 @@ export default class BoxForm extends React.Component {
         this.boxRef.current.selectionStart = getPrompt().length + 1;
     }
 
-
-    // TODO - left vs right arrow keys - make so not all fucky k
-    // bug: type char, backspace, then can move left 
+    // TODO - fix backspace??
     // TODO - var vs let
 
     render(){
