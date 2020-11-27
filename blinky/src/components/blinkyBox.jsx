@@ -33,11 +33,7 @@ export default class BoxForm extends React.Component {
 
     handleTextChange(e) {
         if(this.state.keyArray['Backspace'] === 1){ 
-            
-            // disable highlight select and delete, and deletion of anything before prompt
-
-            // TODO - fix this
-            if(this.state[this.boxRef.current.selectionStart - 1] === '>'){
+            if(this.boxRef.current.value[this.boxRef.current.selectionStart - 1] !== '>'){
                 this.setState({
                     text: e.target.value,
                     changeTrigger: false,
@@ -129,7 +125,6 @@ export default class BoxForm extends React.Component {
         this.boxRef.current.selectionStart = getPrompt().length + 1;
     }
 
-    // TODO - fix backspace??
     // TODO - var vs let
 
     render(){
