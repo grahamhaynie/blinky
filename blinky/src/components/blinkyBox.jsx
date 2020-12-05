@@ -101,7 +101,6 @@ export default class BoxForm extends React.Component {
                 index: newText.length,
                 commands: newCommands,
                 commandHistory: newCommands.length,
-                currentCommand: "",
             });
         }
         // for now disable ctrl + keys
@@ -112,23 +111,50 @@ export default class BoxForm extends React.Component {
             if (e.key === 'ArrowUp'){
 
                 if(this.state.commandHistory - 1 >= 0){
-                    //console.log(this.state.commands[this.state.commandHistory - 1]);
+                    console.log(this.state.commands[this.state.commandHistory - 1]);
+
+                    // track typed command so can return to when scrolling through history 
+                    let cur = "scrolling";
+                    if( this.state.currentCommand !== "scrolling"){
+                        cur = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
+                    }
+                    
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
+                    //const newText = this.state.text.replace(this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length),this.state.commands[this.state.commandHistory - 1] );
+
                     this.setState({
-                        commandHistory: this.state.commandHistory - 1
+                        commandHistory: this.state.commandHistory - 1,
+                        currentCommand: cur,
+                        text: newText,
                     });
                 }else{
-                    //console.log(this.state.commands[this.state.commandHistory]);
+                    console.log(this.state.commands[this.state.commandHistory]);
                 }
             }else if(e.key === 'ArrowDown'){
                 
                 if(this.state.commandHistory + 1 <= this.state.commands.length - 1){
-                    //console.log(this.state.commands[this.state.commandHistory + 1]);
-                    this.setState({commandHistory: this.state.commandHistory + 1});
+                    console.log(this.state.commands[this.state.commandHistory + 1]);
+                    
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
+                    
+                    this.setState({
+                        commandHistory: this.state.commandHistory + 1,
+                        text: newText,
+                    });
+
+
+
                 }else if(this.state.commandHistory + 1 == this.state.commands.length){
-                    //console.log("current");
-                    this.setState({commandHistory: this.state.commands.length - 1});
+                    console.log('current: ', this.state.currentCommand);
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
+                    
+                    this.setState({
+                        commandHistory: this.state.commands.length - 1,
+                        text: newText,
+                    });
+
                 }else{
-                   // console.log(this.state.commands[this.state.commandHistory]);
+                    console.log(this.state.commands[this.state.commandHistory]);
                 }
             }
 
