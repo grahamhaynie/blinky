@@ -11,6 +11,21 @@ function getPrompt(){
     return `${hours<10?`0${hours}`:`${hours}`}:${mins<10?`0${mins}`:`${mins}`}:${secs<10?`0${secs}`:`${secs}`} > `
 }
 
+
+
+function parseCommand(props){
+    let trimmed = props.command.trim();
+    console.log('trimmed: ' + trimmed);
+
+    switch(trimmed){
+        case 'help':
+            return [true, 'sample output']
+        default:
+            return [false, '']
+    }
+
+}
+
 export default class BoxForm extends React.Component {
     constructor(props){
         super(props);
@@ -28,6 +43,9 @@ export default class BoxForm extends React.Component {
             changeTrigger: false,
             selected: "",
             index: prompt.length,
+            commands: [],
+            commandHistory: 0,
+            currentCommand: "",
         };
     }
 
@@ -51,14 +69,13 @@ export default class BoxForm extends React.Component {
         }
 
         var keys = this.state.keyArray;
-        Object.keys(keys).map((key) => {keys[key] = 0;});
+        Object.keys(keys).map((key) => {return keys[key] = 0;});
         this.setState({keyArray: keys});
 
     }
 
     handleKeyDown(e){
 
-        // TODO - make one liner
         var keys = this.state.keyArray;
         keys[e.key] = 1;
         this.setState({keyArray: keys});
@@ -66,23 +83,54 @@ export default class BoxForm extends React.Component {
         if(e.key === 'Enter'){
             e.preventDefault();
             var command = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
-            
-            // TODO parse whitespace
-            
-            console.log('command: ' + command);
 
-            var prompt = getPrompt();
-            var newText = this.state.text + '\n' + prompt;
+            const newCommands = this.state.commands.concat(command);
+            
+            // TODO - display based on command
+            let p = parseCommand({command: command});
+            var newText
+            if( p[0] ){
+                newText = this.state.text + '\n' + p[1] + '\n' + getPrompt();
+            }else{
+                newText = this.state.text + '\n' + getPrompt();
+            }
+            
             this.setState({
                 text: newText,
                 changeTrigger: false,
                 index: newText.length,
+                commands: newCommands,
+                commandHistory: newCommands.length,
+                currentCommand: "",
             });
         }
         // for now disable ctrl + keys
         // also disable up and down keys for now
-        else if(e.ctrlKey === true || e.key === 'ArrowUp' || e.key == 'ArrowDown'){
+        else if(e.ctrlKey === true || e.key === 'ArrowUp' || e.key === 'ArrowDown'){
             e.preventDefault();
+
+            if (e.key === 'ArrowUp'){
+
+                if(this.state.commandHistory - 1 >= 0){
+                    //console.log(this.state.commands[this.state.commandHistory - 1]);
+                    this.setState({
+                        commandHistory: this.state.commandHistory - 1
+                    });
+                }else{
+                    //console.log(this.state.commands[this.state.commandHistory]);
+                }
+            }else if(e.key === 'ArrowDown'){
+                
+                if(this.state.commandHistory + 1 <= this.state.commands.length - 1){
+                    //console.log(this.state.commands[this.state.commandHistory + 1]);
+                    this.setState({commandHistory: this.state.commandHistory + 1});
+                }else if(this.state.commandHistory + 1 == this.state.commands.length){
+                    //console.log("current");
+                    this.setState({commandHistory: this.state.commands.length - 1});
+                }else{
+                   // console.log(this.state.commands[this.state.commandHistory]);
+                }
+            }
 
             // TODO - add scroll through commands
             
