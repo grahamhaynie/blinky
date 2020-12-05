@@ -11,19 +11,23 @@ function getPrompt(){
     return `${hours<10?`0${hours}`:`${hours}`}:${mins<10?`0${mins}`:`${mins}`}:${secs<10?`0${secs}`:`${secs}`} > `
 }
 
-
+function getHistory(props){
+    let ret = ""
+    for(var i = 0; i < props.history.length; i ++){
+        ret = ret + (i + 1) + ' - ' + props.history[i] + (i == props.history.length - 1 ? '' : '\n');
+    }
+    return ret
+}
 
 function parseCommand(props){
-    let trimmed = props.command.trim();
-    console.log('trimmed: ' + trimmed);
-
-    switch(trimmed){
+    switch(props.command){
         case 'help':
             return [true, 'sample output']
+        case 'history':
+            return [true, getHistory({history: props.history})]
         default:
             return [false, '']
     }
-
 }
 
 export default class BoxForm extends React.Component {
@@ -59,7 +63,6 @@ export default class BoxForm extends React.Component {
                 });
             }
         }
-
         else if(this.state.changeTrigger){
             this.setState({
                 text: e.target.value,
@@ -71,7 +74,6 @@ export default class BoxForm extends React.Component {
         var keys = this.state.keyArray;
         Object.keys(keys).map((key) => {return keys[key] = 0;});
         this.setState({keyArray: keys});
-
     }
 
     handleKeyDown(e){
@@ -82,12 +84,11 @@ export default class BoxForm extends React.Component {
 
         if(e.key === 'Enter'){
             e.preventDefault();
-            var command = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
+            var command = (this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length)).trim();
 
             const newCommands = this.state.commands.concat(command);
             
-            // TODO - display based on command
-            let p = parseCommand({command: command});
+            let p = parseCommand({command: command, history: this.state.commands});
             var newText
             if( p[0] ){
                 newText = this.state.text + '\n' + p[1] + '\n' + getPrompt();
@@ -100,61 +101,56 @@ export default class BoxForm extends React.Component {
                 changeTrigger: false,
                 index: newText.length,
                 commands: newCommands,
-                commandHistory: newCommands.length,
             });
         }
         // for now disable ctrl + keys
-        // also disable up and down keys for now
-        else if(e.ctrlKey === true || e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+        else if(e.ctrlKey === true){
             e.preventDefault();
+        }
+        // allow cycle through commands
+        else if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+            e.preventDefault();
+
+            console.log('current is ', this.state.currentCommand);
 
             if (e.key === 'ArrowUp'){
 
                 if(this.state.commandHistory - 1 >= 0){
-                    console.log(this.state.commands[this.state.commandHistory - 1]);
-
                     // track typed command so can return to when scrolling through history 
-                    let cur = "scrolling";
-                    if( this.state.currentCommand !== "scrolling"){
+                    var cur = this.state.currentCommand;
+                    if( this.state.commandHistory - 1 === this.state.commands.length - 1){
                         cur = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
+                        console.error('set current command ', cur);
                     }
                     
                     const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
-                    //const newText = this.state.text.replace(this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length),this.state.commands[this.state.commandHistory - 1] );
 
                     this.setState({
                         commandHistory: this.state.commandHistory - 1,
                         currentCommand: cur,
                         text: newText,
                     });
-                }else{
-                    console.log(this.state.commands[this.state.commandHistory]);
                 }
             }else if(e.key === 'ArrowDown'){
-                
-                if(this.state.commandHistory + 1 <= this.state.commands.length - 1){
-                    console.log(this.state.commands[this.state.commandHistory + 1]);
-                    
-                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
+                if(this.state.commandHistory + 1 < this.state.commands.length - 1){
+                    console.error('show old');
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory + 1];
                     
                     this.setState({
                         commandHistory: this.state.commandHistory + 1,
                         text: newText,
                     });
 
-
-
-                }else if(this.state.commandHistory + 1 == this.state.commands.length){
-                    console.log('current: ', this.state.currentCommand);
-                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
+                }else if(this.state.commandHistory + 1 === this.state.commands.length - 1){
+                    console.error("display current");
+                    
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.currentCommand;
                     
                     this.setState({
-                        commandHistory: this.state.commands.length - 1,
+                        commandHistory: this.state.commands.length + 1,
                         text: newText,
                     });
 
-                }else{
-                    console.log(this.state.commands[this.state.commandHistory]);
                 }
             }
 
@@ -178,6 +174,7 @@ export default class BoxForm extends React.Component {
         }else{
             this.setState({
                 changeTrigger: true,
+                commandHistory: this.state.commands.length,
             });
         }
 
