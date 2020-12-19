@@ -95,12 +95,13 @@ export default class BoxForm extends React.Component {
             }else{
                 newText = this.state.text + '\n' + getPrompt();
             }
-            
+
             this.setState({
                 text: newText,
                 changeTrigger: false,
                 index: newText.length,
                 commands: newCommands,
+                commandHistory: newCommands.length, 
             });
         }
         // for now disable ctrl + keys
@@ -111,16 +112,12 @@ export default class BoxForm extends React.Component {
         else if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
             e.preventDefault();
 
-            console.log('current is ', this.state.currentCommand);
-
             if (e.key === 'ArrowUp'){
-
                 if(this.state.commandHistory - 1 >= 0){
                     // track typed command so can return to when scrolling through history 
                     var cur = this.state.currentCommand;
                     if( this.state.commandHistory - 1 === this.state.commands.length - 1){
                         cur = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
-                        console.error('set current command ', cur);
                     }
                     
                     const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
@@ -132,8 +129,7 @@ export default class BoxForm extends React.Component {
                     });
                 }
             }else if(e.key === 'ArrowDown'){
-                if(this.state.commandHistory + 1 < this.state.commands.length - 1){
-                    console.error('show old');
+                if(this.state.commandHistory + 1 <= this.state.commands.length - 1){
                     const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory + 1];
                     
                     this.setState({
@@ -141,21 +137,15 @@ export default class BoxForm extends React.Component {
                         text: newText,
                     });
 
-                }else if(this.state.commandHistory + 1 === this.state.commands.length - 1){
-                    console.error("display current");
-                    
+                }else if (this.state.commandHistory + 1 === this.state.commands.length){
                     const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.currentCommand;
                     
                     this.setState({
-                        commandHistory: this.state.commands.length + 1,
+                        commandHistory: this.state.commands.length,
                         text: newText,
                     });
-
                 }
             }
-
-            // TODO - add scroll through commands
-            
         }else if(e.key === 'ArrowLeft'){
             if (this.boxRef.current.value[this.boxRef.current.selectionStart - 1] === '>'){
                 this.boxRef.current.selectionStart = this.boxRef.current.selectionEnd = e.target.selectionStart + 1;
