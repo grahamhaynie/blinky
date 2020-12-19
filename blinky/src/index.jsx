@@ -2,8 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-import BoxForm from './components/blinkyBox.jsx'
+import ButtonAppBar from './components/buttonBar.jsx'
 
+import BoxForm from './components/blinkyBox.jsx'
 
 
 class BlinkApp extends React.Component {
@@ -14,6 +15,8 @@ class BlinkApp extends React.Component {
     render(){
         return(        
             <div className="main">
+                <ButtonAppBar />
+                
                 <BoxForm />
             </div>
         );

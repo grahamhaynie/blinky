@@ -120,7 +120,7 @@ export default class BoxForm extends React.Component {
                         cur = this.state.text.substring(this.state.text.lastIndexOf('>') + 1, this.boxRef.current.value.length);
                     }
                     
-                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory - 1];
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + ' ' + this.state.commands[this.state.commandHistory - 1];
 
                     this.setState({
                         commandHistory: this.state.commandHistory - 1,
@@ -130,7 +130,7 @@ export default class BoxForm extends React.Component {
                 }
             }else if(e.key === 'ArrowDown'){
                 if(this.state.commandHistory + 1 <= this.state.commands.length - 1){
-                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + this.state.commands[this.state.commandHistory + 1];
+                    const newText = this.state.text.substring(0, this.state.text.lastIndexOf('>') + 1) + ' ' + this.state.commands[this.state.commandHistory + 1];
                     
                     this.setState({
                         commandHistory: this.state.commandHistory + 1,
